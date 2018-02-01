@@ -43,9 +43,9 @@ public class HttpServerBootstrap {
 
     private final String bindAddress;
     private final int port;
-    private final Supplier<HttpHandler> httpHandler;
+    private final Supplier<HttpInitializer> httpHandler;
 
-    public HttpServerBootstrap(String bindAddress, int port, Supplier<HttpHandler> httpHandler) {
+    public HttpServerBootstrap(String bindAddress, int port, Supplier<HttpInitializer> httpHandler) {
         this.bindAddress = bindAddress;
         this.port = port;
         this.httpHandler = httpHandler;
@@ -56,16 +56,17 @@ public class HttpServerBootstrap {
                 new ThreadFactoryBuilder().setDaemon(true).setNameFormat("accept-thread-%s").build());
         EventLoopGroup ioLoop = new NioEventLoopGroup(ENV.IO_THREAD_COUNT,
                 new ThreadFactoryBuilder().setDaemon(true).setNameFormat("io-thread-%s").build());
-        HttpHandler handler = httpHandler.get();
+        HttpInitializer handler = httpHandler.get();
 
         ServerBootstrap bootstrap = new ServerBootstrap()
                 .localAddress(bindAddress, port)
                 .channel(NioServerSocketChannel.class)
                 .handler(new LoggingHandler(LogLevel.DEBUG))
+                .childOption(ChannelOption.SO_KEEPALIVE, true)
                 .childHandler(handler)
                 .group(accLoop, ioLoop)
                 .option(ChannelOption.SO_BACKLOG, 1024)
-                .option(ChannelOption.SO_KEEPALIVE, true)
+                .option(ChannelOption.SO_REUSEADDR, true)
                 .validate();
 
         ChannelFuture serverFuture = null;

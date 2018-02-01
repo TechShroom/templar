@@ -35,8 +35,10 @@ import io.netty.handler.codec.http.HttpContentCompressor;
 import io.netty.handler.codec.http.HttpContentDecompressor;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 
-public class HttpHandler extends ChannelInitializer<SocketChannel> {
+public class HttpInitializer extends ChannelInitializer<SocketChannel> {
 
     private static final Environment ENV = Environment.getInstance();
 
@@ -44,7 +46,7 @@ public class HttpHandler extends ChannelInitializer<SocketChannel> {
             new ThreadFactoryBuilder().setDaemon(true).setNameFormat("worker-thread-%s").build());
     private final HttpRouterHandler router;
 
-    public HttpHandler(HttpRouterHandler router) {
+    public HttpInitializer(HttpRouterHandler router) {
         this.router = router;
     }
 
@@ -61,6 +63,19 @@ public class HttpHandler extends ChannelInitializer<SocketChannel> {
 
         // collect into a single object
         pipe.addLast(new HttpObjectAggregator(ENV.MAX_CONTENT_LENGTH));
+        
+        // prime Content-length if not yet done
+        pipe.addLast(HttpContentLengthFiller.getInstance());
+        
+        pipe.addLast(new LoggingHandler("pre-codec-logger", LogLevel.DEBUG));
+
+        // encode/decode to lettar classes
+        pipe.addLast(LettarCodec.getInstance());
+
+        pipe.addLast(new LoggingHandler("pre-router-logger", LogLevel.DEBUG));
+        
+        // weird error handler
+        pipe.addLast(new LastDitchErrorLogger());
 
         // route (in application loop)
         pipe.addLast(appLoop, router);
