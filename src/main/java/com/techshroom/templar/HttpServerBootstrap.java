@@ -53,15 +53,15 @@ public class HttpServerBootstrap {
 
     public void start() {
         EventLoopGroup accLoop = new NioEventLoopGroup(ENV.ACCEPT_THREAD_COUNT,
-                new ThreadFactoryBuilder().setDaemon(true).setNameFormat("accept-thread-%s").build());
+                new ThreadFactoryBuilder().setDaemon(true).setNameFormat("accept-thread-%d").build());
         EventLoopGroup ioLoop = new NioEventLoopGroup(ENV.IO_THREAD_COUNT,
-                new ThreadFactoryBuilder().setDaemon(true).setNameFormat("io-thread-%s").build());
+                new ThreadFactoryBuilder().setDaemon(true).setNameFormat("io-thread-%d").build());
         HttpInitializer handler = httpHandler.get();
 
         ServerBootstrap bootstrap = new ServerBootstrap()
                 .localAddress(bindAddress, port)
                 .channel(NioServerSocketChannel.class)
-                .handler(new LoggingHandler(LogLevel.DEBUG))
+                .handler(new LoggingHandler("templar-server", LogLevel.DEBUG))
                 .childOption(ChannelOption.SO_KEEPALIVE, true)
                 .childHandler(handler)
                 .group(accLoop, ioLoop)

@@ -63,22 +63,25 @@ public class HttpInitializer extends ChannelInitializer<SocketChannel> {
 
         // collect into a single object
         pipe.addLast(new HttpObjectAggregator(ENV.MAX_CONTENT_LENGTH));
-        
+
         // prime Content-length if not yet done
         pipe.addLast(HttpContentLengthFiller.getInstance());
-        
+
         pipe.addLast(new LoggingHandler("pre-codec-logger", LogLevel.DEBUG));
 
         // encode/decode to lettar classes
         pipe.addLast(LettarCodec.getInstance());
 
         pipe.addLast(new LoggingHandler("pre-router-logger", LogLevel.DEBUG));
-        
+
         // weird error handler
         pipe.addLast(new LastDitchErrorLogger());
 
         // route (in application loop)
         pipe.addLast(appLoop, router);
+
+        // errors (if any)
+        pipe.addLast(ExceptionHandler.getInstance());
     }
 
     public void shutdown() {

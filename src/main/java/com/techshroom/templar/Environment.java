@@ -36,8 +36,8 @@ public class Environment {
         return "templar." + name;
     }
 
-    public final int ACCEPT_THREAD_COUNT = Integer.getInteger(prop("threads.accept"), 1);
-    public final int IO_THREAD_COUNT = Integer.getInteger(prop("threads.io"), 4);
+    public final int ACCEPT_THREAD_COUNT = Integer.getInteger(prop("threads.accept"), 2);
+    public final int IO_THREAD_COUNT = Integer.getInteger(prop("threads.io"), 20);
     public final int WORKER_THREAD_COUNT = Integer.getInteger(prop("threads.worker"), 4);
 
     public final int MAX_CONTENT_LENGTH = Integer.getInteger(prop("content.length.max"), 128 * 1024 * 1024);

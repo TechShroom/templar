@@ -56,6 +56,11 @@ public class TestApp {
         public Response<Object> index() {
             return SimpleResponse.of(200, "Anything goes!");
         }
+        
+        @Path("/error")
+        public Response<Object> error() {
+            throw new AssertionError("Error. This the error path.");
+        }
 
         @NotFoundHandler
         public Response<Object> notFound() {

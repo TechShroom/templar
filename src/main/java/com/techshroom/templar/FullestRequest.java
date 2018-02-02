@@ -41,7 +41,6 @@ import io.netty.handler.codec.http.QueryStringDecoder;
 public abstract class FullestRequest implements Request<ByteBuf> {
 
     public static FullestRequest wrap(FullHttpRequest nettyRequest) {
-        System.err.println("Request: " + nettyRequest.content());
         return new AutoValue_FullestRequest(nettyRequest.retainedDuplicate());
     }
 
