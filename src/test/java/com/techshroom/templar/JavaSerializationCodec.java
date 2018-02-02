@@ -28,6 +28,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Type;
 
 import com.techshroom.lettar.body.SimpleCodec;
 
@@ -38,7 +39,7 @@ import io.netty.buffer.Unpooled;
 public class JavaSerializationCodec implements SimpleCodec<ByteBuf, Object> {
 
     @Override
-    public Object decode(ByteBuf input) {
+    public Object decode(Type bodyType, ByteBuf input) {
         if (input.readableBytes() == 0) {
             return null;
         }

@@ -29,7 +29,6 @@ import com.google.auto.value.extension.memoized.Memoized;
 import com.google.common.collect.ImmutableListMultimap;
 import com.techshroom.lettar.HttpUtil;
 import com.techshroom.lettar.Request;
-import com.techshroom.lettar.SimpleRequest;
 import com.techshroom.lettar.collections.HttpMultimap;
 import com.techshroom.lettar.routing.HttpMethod;
 
@@ -102,11 +101,6 @@ public abstract class FullestRequest implements Request<ByteBuf> {
     @Memoized
     public ByteBuf getBody() {
         return request().content();
-    }
-
-    @Override
-    public <U> Request<U> withBody(U body) {
-        return SimpleRequest.copyOfWithBody(this, body);
     }
 
 }
