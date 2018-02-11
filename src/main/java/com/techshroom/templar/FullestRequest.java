@@ -27,10 +27,10 @@ package com.techshroom.templar;
 import com.google.auto.value.AutoValue;
 import com.google.auto.value.extension.memoized.Memoized;
 import com.google.common.collect.ImmutableListMultimap;
-import com.techshroom.lettar.HttpUtil;
 import com.techshroom.lettar.Request;
 import com.techshroom.lettar.collections.HttpMultimap;
 import com.techshroom.lettar.routing.HttpMethod;
+import com.techshroom.lettar.util.HttpUtil;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.FullHttpRequest;

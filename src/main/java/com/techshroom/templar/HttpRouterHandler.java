@@ -24,6 +24,8 @@
  */
 package com.techshroom.templar;
 
+import java.util.concurrent.CompletionStage;
+
 import com.techshroom.lettar.Response;
 import com.techshroom.lettar.Router;
 
@@ -35,17 +37,19 @@ import io.netty.channel.SimpleChannelInboundHandler;
 @Sharable
 public class HttpRouterHandler extends SimpleChannelInboundHandler<FullestRequest> {
 
-    private final Router<ByteBuf, ByteBuf> router;
+    private final Router<ByteBuf, Object> router;
 
-    public HttpRouterHandler(Router<ByteBuf, ByteBuf> router) {
+    public HttpRouterHandler(Router<ByteBuf, Object> router) {
         this.router = router;
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullestRequest msg) throws Exception {
-        Response<ByteBuf> response = router.route(msg);
-        msg.release();
-        ctx.writeAndFlush(response);
+        CompletionStage<Response<Object>> respStage = router.route(msg);
+        respStage.thenAccept(response -> {
+            msg.release();
+            ctx.writeAndFlush(response);
+        });
     }
 
 }

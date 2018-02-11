@@ -67,6 +67,9 @@ public class HttpInitializer extends ChannelInitializer<SocketChannel> {
         // prime Content-length if not yet done
         pipe.addLast(HttpContentLengthFiller.getInstance());
 
+        // split streaming bodies into chunks
+        pipe.addLast(InputStreamChunker.getInstance());
+
         pipe.addLast(new LoggingHandler("pre-codec-logger", LogLevel.DEBUG));
 
         // encode/decode to lettar classes

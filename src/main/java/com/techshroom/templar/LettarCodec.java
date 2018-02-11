@@ -26,6 +26,7 @@ package com.techshroom.templar;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -33,15 +34,17 @@ import com.techshroom.lettar.Response;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelHandler.Sharable;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageCodec;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.EmptyHttpHeaders;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.HttpVersion;
 
 @Sharable
@@ -62,10 +65,13 @@ public class LettarCodec extends MessageToMessageCodec<FullHttpRequest, Response
         DefaultHttpHeaders headers = new DefaultHttpHeaders();
         msg.getHeaders().getMultimap().forEach(headers::add);
         // the response could have any junk
-        // under most circumstances it will be ByteBuf
+        // under most circumstances it will be InputStream or ByteBuf
         // but some errors come as Object or String
         ByteBuf body;
-        if (msg.getBody() instanceof ByteBuf) {
+        if (msg.getBody() instanceof InputStream) {
+            handleStreaming(msg, out, headers);
+            return;
+        } else if (msg.getBody() instanceof ByteBuf) {
             body = (ByteBuf) msg.getBody();
         } else {
             body = Unpooled.copiedBuffer(String.valueOf(msg.getBody()), StandardCharsets.UTF_8);
@@ -76,6 +82,29 @@ public class LettarCodec extends MessageToMessageCodec<FullHttpRequest, Response
                 headers,
                 EmptyHttpHeaders.INSTANCE);
         out.add(response);
+    }
+
+    private void handleStreaming(Response<Object> msg, List<Object> out, DefaultHttpHeaders headers) {
+        // write out headers, etc. immediately
+        DefaultHttpResponse httpMessage = new DefaultHttpResponse(HttpVersion.HTTP_1_1,
+                HttpResponseStatus.valueOf(msg.getStatusCode()),
+                headers);
+        // ensure chunked
+        HttpUtil.setTransferEncodingChunked(httpMessage, true);
+        out.add(httpMessage);
+
+        InputStream stream = (InputStream) msg.getBody();
+        ChunkProvider chunkProvider;
+        if (msg.getHeaders().getSingleValueOrDefault("content-type", "text/plain")
+                .equals("application/octet-stream")) {
+            // binary data -- normal chunking
+            chunkProvider = new LengthChunkProvider(stream);
+        } else {
+            // likely text data -- line-based chunking
+            chunkProvider = new LineChunkProvider(stream);
+        }
+
+        out.add(new LettarChunkRequest(chunkProvider));
     }
 
     @Override
