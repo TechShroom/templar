@@ -24,11 +24,20 @@
  */
 package com.techshroom.templar;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.util.UUID;
+import java.util.concurrent.CompletionStage;
+
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.techshroom.lettar.Response;
 import com.techshroom.lettar.Router;
 import com.techshroom.lettar.SimpleResponse;
+import com.techshroom.lettar.addons.sse.BaseSseEmitter;
+import com.techshroom.lettar.addons.sse.ServerSentEvent;
+import com.techshroom.lettar.addons.sse.SseEmitter;
 import com.techshroom.lettar.annotation.NotFoundHandler;
 import com.techshroom.lettar.annotation.ServerErrorHandler;
 import com.techshroom.lettar.pipe.PipelineRouterInitializer;
@@ -39,14 +48,47 @@ import io.netty.buffer.ByteBuf;
 public class TestApp {
 
     public static void main(String[] args) {
-        Router<ByteBuf, ByteBuf> router = new PipelineRouterInitializer()
+        Router<ByteBuf, Object> router = new PipelineRouterInitializer()
                 .newRouter(ImmutableList.of(
-                        new Api()));
+                        new Api(),
+                        new Stream()));
         HttpServerBootstrap bootstrap = new HttpServerBootstrap("localhost", 57005, () -> {
             return new HttpInitializer(new HttpRouterHandler(router));
         });
 
         bootstrap.start();
+    }
+
+    public static final class Stream {
+
+        @Path("/sse")
+        public CompletionStage<Response<InputStream>> sse() {
+            SseEmitter emitter = new BaseSseEmitter(SimpleResponse::builder);
+
+            Thread t = new Thread(() -> {
+                try (SseEmitter e = emitter) {
+                    try {
+                        while (true) {
+                            Thread.sleep(1);
+                            e.emit(ServerSentEvent.of("time", UUID.randomUUID().toString(), "" + System.currentTimeMillis()));
+                        }
+                    } catch (Exception ex) {
+                        if (!e.isOpen()) {
+                            return;
+                        }
+                        Throwables.throwIfUnchecked(ex);
+                        throw new RuntimeException(ex);
+                    }
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            }, "emitter");
+
+            t.start();
+
+            return emitter.getResponseStage();
+        }
+
     }
 
     @JavaSerializationBodyCodec
@@ -56,7 +98,7 @@ public class TestApp {
         public Response<Object> index() {
             return SimpleResponse.of(200, "Anything goes!");
         }
-        
+
         @Path("/error")
         public Response<Object> error() {
             throw new AssertionError("Error. This the error path.");

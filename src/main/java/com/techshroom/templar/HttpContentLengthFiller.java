@@ -26,15 +26,17 @@ package com.techshroom.templar;
 
 import java.util.List;
 
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelHandler.Sharable;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpUtil;
+import io.netty.util.ReferenceCountUtil;
 
 @Sharable
-public class HttpContentLengthFiller extends MessageToMessageEncoder<FullHttpResponse> {
+public class HttpContentLengthFiller extends MessageToMessageEncoder<HttpResponse> {
 
     private static final HttpContentLengthFiller INSTANCE = new HttpContentLengthFiller();
 
@@ -46,13 +48,13 @@ public class HttpContentLengthFiller extends MessageToMessageEncoder<FullHttpRes
     }
 
     @Override
-    protected void encode(ChannelHandlerContext ctx, FullHttpResponse msg, List<Object> out) throws Exception {
-        msg.retain();
-        if (HttpUtil.isContentLengthSet(msg)) {
+    protected void encode(ChannelHandlerContext ctx, HttpResponse msg, List<Object> out) throws Exception {
+        ReferenceCountUtil.retain(msg);
+        if (HttpUtil.isContentLengthSet(msg) || !(msg instanceof FullHttpResponse)) {
             out.add(msg);
             return;
         }
-        msg.headers().set(HttpHeaderNames.CONTENT_LENGTH, msg.content().readableBytes());
+        msg.headers().set(HttpHeaderNames.CONTENT_LENGTH, ((FullHttpResponse) msg).content().readableBytes());
         out.add(msg);
     }
 
