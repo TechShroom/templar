@@ -2,7 +2,7 @@ buildscript {
     repositories {
         mavenCentral()
         maven {
-            url "https://oss.sonatype.org/content/repositories/snapshots/"
+            url 'https://oss.sonatype.org/content/repositories/releases/'
         }
         maven {
             url "https://plugins.gradle.org/m2/"
@@ -15,7 +15,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath group: 'com.techshroom', name: 'Aversion', version: '3.0.1'
+        classpath group: 'com.techshroom', name: 'Aversion', version: '3.1.0'
     }
 }
 plugins {
@@ -53,12 +53,6 @@ mavencfg {
     description 'Server library for Java, based on lettar and netty'
 }
 
-repositories {
-    mavenCentral()
-    maven {
-        url "https://oss.sonatype.org/content/repositories/snapshots/"
-    }
-}
 configurations.all {
    resolutionStrategy {
      // fail eagerly on version conflict (includes transitive dependencies)
