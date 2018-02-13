@@ -43,8 +43,8 @@ import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.EmptyHttpHeaders;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.HttpVersion;
 
 @Sharable
@@ -89,8 +89,8 @@ public class LettarCodec extends MessageToMessageCodec<FullHttpRequest, Response
         DefaultHttpResponse httpMessage = new DefaultHttpResponse(HttpVersion.HTTP_1_1,
                 HttpResponseStatus.valueOf(msg.getStatusCode()),
                 headers);
-        // ensure chunked
-        HttpUtil.setTransferEncodingChunked(httpMessage, true);
+        // ensure chunked (but do NOT kill length headers!)
+        httpMessage.headers().set(HttpHeaderNames.TRANSFER_ENCODING, "chunked");
         out.add(httpMessage);
 
         InputStream stream = (InputStream) msg.getBody();
