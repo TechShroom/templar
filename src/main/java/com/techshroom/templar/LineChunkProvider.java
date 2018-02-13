@@ -31,8 +31,6 @@ import io.netty.buffer.Unpooled;
 
 public class LineChunkProvider extends BaseChunkProvider {
 
-    private final int MAX_LINES_PER_CHUNK = 512;
-
     private final ByteBuf outputBuffer = Unpooled.buffer();
     private boolean sentEofChunk = false;
 
@@ -42,10 +40,8 @@ public class LineChunkProvider extends BaseChunkProvider {
 
     @Override
     protected ByteBuf computeNextSimple() {
-        int available = available();
         int lastLine = -1;
-        int lines = 0;
-        while ((lastLine == -1 || available > 0) && lines <= MAX_LINES_PER_CHUNK) {
+        while (lastLine == -1) {
             int next = read();
             if (next == -1) {
                 // EOF
@@ -58,17 +54,15 @@ public class LineChunkProvider extends BaseChunkProvider {
                 break;
             }
 
-            // decrement available bytes we think we have
-            available--;
-
             outputBuffer.writeByte(next);
 
             if (next == '\n') {
-                // mark as "done", check available bytes for more lines
                 lastLine = outputBuffer.readableBytes();
-                available = available();
-                lines++;
             }
+        }
+        if (sentEofChunk) {
+            // send everything
+            return outputBuffer.copy();
         }
         ByteBuf copy = outputBuffer.copy(0, lastLine);
         // move data after the last line to the new position
