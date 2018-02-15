@@ -63,21 +63,21 @@ public class InputStreamChunker extends ChannelOutboundHandlerAdapter {
         ctx.flush();
         while (chunks.hasNext()) {
             ByteBuf chunk = chunks.next();
-            HttpContent content;
-            if (!chunks.hasNext()) {
-                content = new DefaultLastHttpContent(chunk);
-            } else {
-                content = new DefaultHttpContent(chunk);
-            }
-            ctx.writeAndFlush(content)
-                    .addListener((ChannelFuture future) -> {
-                        if (!future.isSuccess()) {
-                            chunks.close();
-                            future.channel().pipeline().fireExceptionCaught(future.cause());
-                        }
-                    });
+            HttpContent content = new DefaultHttpContent(chunk);
+            writeChunk(ctx, chunks, content);
         }
+        writeChunk(ctx, chunks, new DefaultLastHttpContent());
         promise.setSuccess();
+    }
+
+    private void writeChunk(ChannelHandlerContext ctx, ChunkProvider chunks, HttpContent content) {
+        ctx.writeAndFlush(content)
+                .addListener((ChannelFuture future) -> {
+                    if (!future.isSuccess()) {
+                        chunks.close();
+                        future.channel().pipeline().fireExceptionCaught(future.cause());
+                    }
+                });
     }
 
 }

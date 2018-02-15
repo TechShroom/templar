@@ -24,9 +24,7 @@
  */
 package com.techshroom.templar;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.UncheckedIOException;
 import java.util.UUID;
 import java.util.concurrent.CompletionStage;
 
@@ -41,6 +39,7 @@ import com.techshroom.lettar.addons.sse.SseEmitter;
 import com.techshroom.lettar.annotation.NotFoundHandler;
 import com.techshroom.lettar.annotation.ServerErrorHandler;
 import com.techshroom.lettar.pipe.PipelineRouterInitializer;
+import com.techshroom.lettar.pipe.builtins.accept.Produces;
 import com.techshroom.lettar.pipe.builtins.path.Path;
 
 import io.netty.buffer.ByteBuf;
@@ -79,14 +78,29 @@ public class TestApp {
                         Throwables.throwIfUnchecked(ex);
                         throw new RuntimeException(ex);
                     }
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e);
                 }
             }, "emitter");
 
             t.start();
 
             return emitter.getResponseStage();
+        }
+
+        @Path("/sse-sync")
+        public CompletionStage<Response<InputStream>> sseSync() {
+            SseEmitter emitter = new BaseSseEmitter(SimpleResponse::builder);
+
+            for (int i = 0; i < 1; i++) {
+                emitter.emit(ServerSentEvent.of("sync", String.valueOf(i), String.valueOf(i)));
+            }
+
+            return emitter.getResponseStage();
+        }
+
+        @Path("/index")
+        @Produces("text/plain")
+        public Response<Object> index() {
+            return SimpleResponse.of(200, "");
         }
 
     }
