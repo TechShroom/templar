@@ -1,1 +1,6 @@
-rootProject.name = 'templar'
+rootProject.name = 'templar-parent'
+
+['core', 'codec-jackson'].each { name ->
+    include name
+    project(":${name}").name = "templar-${name}"
+}

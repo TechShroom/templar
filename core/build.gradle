@@ -1,0 +1,9 @@
+inciseBlue.maven {
+    coords 'TechShroom', 'templar'
+    description 'Server library for Java, based on lettar and netty'
+}
+
+dependencies {
+    testImplementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+    testImplementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
+}

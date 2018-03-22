@@ -1,0 +1,22 @@
+inciseBlue.maven {
+    coords 'TechShroom', 'templar-codec-jackson'
+    description 'Templar Codec - Jackson'
+}
+
+configurations.all {
+   resolutionStrategy {
+     force 'com.fasterxml.jackson.core:jackson-annotations:' + jacksonVersion
+   }
+}
+
+dependencies {
+    // most dependencies inherited from templar super-project
+    api project(':templar-core')
+
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: project.jacksonVersion
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: project.jacksonVersion
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: project.jacksonVersion
+    implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: project.jacksonVersion
+    implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jdk8', version: project.jacksonVersion
+    implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-guava', version: project.jacksonVersion
+}
