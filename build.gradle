@@ -42,7 +42,7 @@ subprojects {
 
     dependencies {
         api group: 'io.netty', name: 'netty-all', version: '4.1.22.Final'
-        api group: 'com.techshroom', name: 'lettar', version: '0.3.0'
+        api group: 'com.techshroom', name: 'lettar', version: '0.3.1'
         api group: 'com.google.guava', name: 'guava', version: project.guavaVersion
 
         api group: 'com.techshroom', name: 'jsr305-plus', version: '0.0.1'
@@ -56,4 +56,5 @@ subprojects {
 }
 
 task build {}
+build.dependsOn(subprojects.collect { it.build })
 afterReleaseBuild.dependsOn(subprojects.collect { it.uploadArchives })
