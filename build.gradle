@@ -7,6 +7,11 @@ subprojects {
     apply plugin: 'com.techshroom.incise-blue'
     apply plugin: 'java-library'
 
+    version = rootProject.version
+    group = rootProject.group
+    ext.url = rootProject.url
+    ext.organization = rootProject.organization
+
     inciseBlue {
         plugins {
             apt
