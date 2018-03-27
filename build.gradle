@@ -1,11 +1,10 @@
 plugins {
     id "com.techshroom.incise-blue" version "0.0.6" apply false
- 	id "net.researchgate.release" version "2.6.0" apply false
+ 	id "net.researchgate.release" version "2.6.0"
 }
 
 subprojects {
     apply plugin: 'com.techshroom.incise-blue'
-    apply plugin: 'net.researchgate.release'
     apply plugin: 'java-library'
 
     inciseBlue {
@@ -50,3 +49,6 @@ subprojects {
         testImplementation group: 'junit', name: 'junit', version: '4.12'
     }
 }
+
+task build {}
+afterReleaseBuild.dependsOn(subprojects.collect { it.uploadArchives })
