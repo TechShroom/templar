@@ -24,22 +24,36 @@
  */
 package com.techshroom.templar;
 
+import com.techshroom.jungle.Loaders;
+import com.techshroom.jungle.SysPropConfigOption;
+import com.techshroom.jungle.SysPropNamespace;
+
 public class Environment {
 
-    private static final Environment INSTANCE = new Environment();
+    private static final SysPropNamespace NS = SysPropNamespace.create("templar");
+    private static final SysPropNamespace THREADS_NS = NS.subspace("threads");
+    private static final SysPropNamespace CONTENT_NS = NS.subspace("content");
 
-    public static Environment getInstance() {
-        return INSTANCE;
-    }
+    /**
+     * Property: {@code templar.threads.accept}
+     */
+    public static final SysPropConfigOption<Integer> ACCEPT_THREAD_COUNT = THREADS_NS
+            .create("accept", Loaders.forIntInRange(1, Integer.MAX_VALUE), 2);
+    /**
+     * Property: {@code templar.threads.io}
+     */
+    public static final SysPropConfigOption<Integer> IO_THREAD_COUNT = THREADS_NS
+            .create("io", Loaders.forIntInRange(1, Integer.MAX_VALUE), 20);
+    /**
+     * Property: {@code templar.threads.worker}
+     */
+    public static final SysPropConfigOption<Integer> WORKER_THREAD_COUNT = THREADS_NS
+            .create("worker", Loaders.forIntInRange(1, Integer.MAX_VALUE), 4);
 
-    private static String prop(String name) {
-        return "templar." + name;
-    }
-
-    public final int ACCEPT_THREAD_COUNT = Integer.getInteger(prop("threads.accept"), 2);
-    public final int IO_THREAD_COUNT = Integer.getInteger(prop("threads.io"), 20);
-    public final int WORKER_THREAD_COUNT = Integer.getInteger(prop("threads.worker"), 4);
-
-    public final int MAX_CONTENT_LENGTH = Integer.getInteger(prop("content.length.max"), 128 * 1024 * 1024);
+    /**
+     * Property: {@code templar.content.length.max}
+     */
+    public static final SysPropConfigOption<Integer> MAX_CONTENT_LENGTH = CONTENT_NS
+            .create("length.max", Loaders.forIntInRange(1, Integer.MAX_VALUE), 128 * 1024 * 1024);
 
 }

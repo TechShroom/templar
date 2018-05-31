@@ -39,8 +39,6 @@ import io.netty.handler.logging.LoggingHandler;
 
 public class HttpServerBootstrap {
 
-    private static final Environment ENV = Environment.getInstance();
-
     private final String bindAddress;
     private final int port;
     private final Supplier<HttpInitializer> httpHandler;
@@ -52,9 +50,9 @@ public class HttpServerBootstrap {
     }
 
     public void start() {
-        EventLoopGroup accLoop = new NioEventLoopGroup(ENV.ACCEPT_THREAD_COUNT,
+        EventLoopGroup accLoop = new NioEventLoopGroup(Environment.ACCEPT_THREAD_COUNT.get(),
                 new ThreadFactoryBuilder().setDaemon(true).setNameFormat("accept-thread-%d").build());
-        EventLoopGroup ioLoop = new NioEventLoopGroup(ENV.IO_THREAD_COUNT,
+        EventLoopGroup ioLoop = new NioEventLoopGroup(Environment.IO_THREAD_COUNT.get(),
                 new ThreadFactoryBuilder().setDaemon(true).setNameFormat("io-thread-%d").build());
         HttpInitializer handler = httpHandler.get();
 

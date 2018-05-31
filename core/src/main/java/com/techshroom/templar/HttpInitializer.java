@@ -40,9 +40,7 @@ import io.netty.handler.logging.LoggingHandler;
 
 public class HttpInitializer extends ChannelInitializer<SocketChannel> {
 
-    private static final Environment ENV = Environment.getInstance();
-
-    private final EventLoopGroup appLoop = new NioEventLoopGroup(ENV.WORKER_THREAD_COUNT,
+    private final EventLoopGroup appLoop = new NioEventLoopGroup(Environment.WORKER_THREAD_COUNT.get(),
             new ThreadFactoryBuilder().setDaemon(true).setNameFormat("worker-thread-%s").build());
     private final HttpRouterHandler router;
 
@@ -62,7 +60,7 @@ public class HttpInitializer extends ChannelInitializer<SocketChannel> {
         pipe.addLast(new HttpContentDecompressor());
 
         // collect into a single object
-        pipe.addLast(new HttpObjectAggregator(ENV.MAX_CONTENT_LENGTH));
+        pipe.addLast(new HttpObjectAggregator(Environment.MAX_CONTENT_LENGTH.get()));
 
         // prime Content-length if not yet done
         pipe.addLast(HttpContentLengthFiller.getInstance());

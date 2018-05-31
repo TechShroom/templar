@@ -1,5 +1,5 @@
 plugins {
-    id "com.techshroom.incise-blue" version "0.0.6" apply false
+    id "com.techshroom.incise-blue" version "0.0.8" apply false
  	id "net.researchgate.release" version "2.6.0"
 }
 
@@ -46,6 +46,7 @@ subprojects {
         api group: 'com.google.guava', name: 'guava', version: project.guavaVersion
 
         api group: 'com.techshroom', name: 'jsr305-plus', version: '0.0.1'
+        implementation group: 'com.techshroom', name: 'greenish-jungle', version: '0.0.3'
         implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
 
         aptCompileOnly group: 'com.google.auto.service', name: 'auto-service', version: '1.0-rc4'
