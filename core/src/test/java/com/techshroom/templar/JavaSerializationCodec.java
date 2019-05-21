@@ -1,5 +1,5 @@
 /*
- * This file is part of templar-core, licensed under the MIT License (MIT).
+ * This file is part of templar-parent, licensed under the MIT License (MIT).
  *
  * Copyright (c) TechShroom Studios <https://techshroom.com>
  * Copyright (c) contributors
@@ -22,6 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.techshroom.templar;
 
 import java.io.ByteArrayOutputStream;

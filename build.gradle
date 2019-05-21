@@ -1,6 +1,6 @@
 plugins {
-    id "com.techshroom.incise-blue" version "0.0.8" apply false
- 	id "net.researchgate.release" version "2.6.0"
+    id "com.techshroom.incise-blue" version "0.3.14" apply false
+ 	id "net.researchgate.release" version "2.8.0"
 }
 
 subprojects {
@@ -13,12 +13,7 @@ subprojects {
     ext.organization = rootProject.organization
 
     inciseBlue {
-        plugins {
-            apt
-            license
-            maven
-            util
-        }
+        license()
 
         util {
             javaVersion = '1.8'
@@ -32,7 +27,8 @@ subprojects {
          failOnVersionConflict()
 
          // force certain versions of dependencies (including transitive)
-         force 'com.google.guava:guava:' + guavaVersion, 'com.google.code.findbugs:jsr305:3.0.1'
+         force 'com.google.guava:guava:' + guavaVersion, 'com.google.code.findbugs:jsr305:3.0.1',
+                 'org.slf4j:slf4j-api:1.7.26'
 
          cacheDynamicVersionsFor 10, 'minutes'
          // don't cache changing modules at all
@@ -41,16 +37,18 @@ subprojects {
     }
 
     dependencies {
-        api group: 'io.netty', name: 'netty-all', version: '4.1.22.Final'
-        api group: 'com.techshroom', name: 'lettar', version: '0.3.1'
+        api group: 'io.netty', name: 'netty-all', version: '4.1.36.Final'
+        api group: 'com.techshroom', name: 'lettar', version: '0.4.1'
         api group: 'com.google.guava', name: 'guava', version: project.guavaVersion
 
         api group: 'com.techshroom', name: 'jsr305-plus', version: '0.0.1'
         implementation group: 'com.techshroom', name: 'greenish-jungle', version: '0.0.3'
-        implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
+        implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.26'
 
-        aptCompileOnly group: 'com.google.auto.service', name: 'auto-service', version: '1.0-rc4'
-        aptCompileOnly group: 'com.google.auto.value', name: 'auto-value', version: '1.5.4'
+        compileOnly group: 'com.google.auto.service', name: 'auto-service', version: '1.0-rc4'
+        annotationProcessor group: 'com.google.auto.service', name: 'auto-service', version: '1.0-rc4'
+        compileOnly group: 'com.google.auto.value', name: 'auto-value-annotations', version: '1.6.5'
+        annotationProcessor group: 'com.google.auto.value', name: 'auto-value', version: '1.6.5'
 
         testImplementation group: 'junit', name: 'junit', version: '4.12'
     }

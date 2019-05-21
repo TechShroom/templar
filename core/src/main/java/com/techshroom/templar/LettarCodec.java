@@ -1,5 +1,5 @@
 /*
- * This file is part of templar-core, licensed under the MIT License (MIT).
+ * This file is part of templar-parent, licensed under the MIT License (MIT).
  *
  * Copyright (c) TechShroom Studios <https://techshroom.com>
  * Copyright (c) contributors
@@ -22,6 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.techshroom.templar;
 
 import static com.google.common.base.Preconditions.checkState;
@@ -30,7 +31,9 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
+import com.google.common.collect.ImmutableList;
 import com.techshroom.lettar.Response;
 import com.techshroom.templar.util.Pooled;
 
@@ -64,7 +67,9 @@ public class LettarCodec extends MessageToMessageCodec<FullHttpRequest, Response
     @Override
     protected void encode(ChannelHandlerContext ctx, Response<Object> msg, List<Object> out) throws Exception {
         DefaultHttpHeaders headers = new DefaultHttpHeaders();
-        msg.getHeaders().getMultimap().forEach(headers::add);
+        for (Map.Entry<String, ImmutableList<String>> header : msg.getHeaders().entrySet()) {
+            headers.add(header.getKey(), header.getValue());
+        }
         // the response could have any junk
         // under most circumstances it will be InputStream or ByteBuf
         // but some errors come as Object or String
@@ -112,7 +117,7 @@ public class LettarCodec extends MessageToMessageCodec<FullHttpRequest, Response
 
     @Override
     protected void decode(ChannelHandlerContext ctx, FullHttpRequest msg, List<Object> out) throws Exception {
-        out.add(FullestRequest.wrap(msg));
+        out.add(FullestRequest.wrap(msg.retain()));
     }
 
 }

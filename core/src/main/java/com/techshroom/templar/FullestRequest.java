@@ -1,5 +1,5 @@
 /*
- * This file is part of templar-core, licensed under the MIT License (MIT).
+ * This file is part of templar-parent, licensed under the MIT License (MIT).
  *
  * Copyright (c) TechShroom Studios <https://techshroom.com>
  * Copyright (c) contributors
@@ -22,11 +22,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.techshroom.templar;
 
 import com.google.auto.value.AutoValue;
 import com.google.auto.value.extension.memoized.Memoized;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSortedMap;
 import com.techshroom.lettar.Request;
 import com.techshroom.lettar.collections.HttpMultimap;
 import com.techshroom.lettar.routing.HttpMethod;
@@ -35,9 +38,12 @@ import com.techshroom.lettar.util.HttpUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.util.ReferenceCounted;
+
+import java.util.Map;
 
 @AutoValue
-public abstract class FullestRequest implements Request<ByteBuf> {
+public abstract class FullestRequest implements Request<ByteBuf>, ReferenceCounted {
 
     public static FullestRequest wrap(FullHttpRequest nettyRequest) {
         return new AutoValue_FullestRequest(nettyRequest.retainedDuplicate());
@@ -48,19 +54,43 @@ public abstract class FullestRequest implements Request<ByteBuf> {
 
     abstract FullHttpRequest request();
 
-    private boolean released = false;
-
-    public synchronized void release() {
-        if (released) {
-            return;
-        }
-        request().release();
-        released = true;
+    @Override
+    public int refCnt() {
+        return request().refCnt();
     }
 
     @Override
-    protected void finalize() throws Throwable {
-        release();
+    public FullestRequest retain() {
+        request().retain();
+        return this;
+    }
+
+    @Override
+    public FullestRequest retain(int increment) {
+        request().retain(increment);
+        return this;
+    }
+
+    @Override
+    public FullestRequest touch() {
+        request().touch();
+        return this;
+    }
+
+    @Override
+    public FullestRequest touch(Object hint) {
+        request().touch(hint);
+        return this;
+    }
+
+    @Override
+    public boolean release() {
+        return request().release();
+    }
+
+    @Override
+    public boolean release(int decrement) {
+        return request().release(decrement);
     }
 
     @Memoized
@@ -75,20 +105,18 @@ public abstract class FullestRequest implements Request<ByteBuf> {
 
     @Override
     @Memoized
-    public HttpMultimap getQueryParts() {
-        ImmutableListMultimap.Builder<String, String> builder = HttpUtil.headerMapBuilder();
-        qsDecoded().parameters().forEach((k, l) -> {
-            l.forEach(v -> builder.put(k, v));
-        });
-        return HttpMultimap.copyOfPreSorted(builder.build());
+    public ImmutableListMultimap<String, String> getQueryParts() {
+        ImmutableListMultimap.Builder<String, String> builder = ImmutableListMultimap.builder();
+        qsDecoded().parameters().forEach(builder::putAll);
+        return builder.build();
     }
 
     @Override
     @Memoized
     public HttpMultimap getHeaders() {
-        ImmutableListMultimap.Builder<String, String> builder = HttpUtil.headerMapBuilder()
-                .putAll(request().headers());
-        return HttpMultimap.copyOfPreSorted(builder.build());
+        return HttpMultimap.copyOf(HttpUtil.headerMultimapBuilder()
+            .putAll(request().headers())
+            .build());
     }
 
     @Override

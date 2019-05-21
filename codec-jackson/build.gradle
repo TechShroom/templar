@@ -1,6 +1,6 @@
 inciseBlue.maven {
     coords 'TechShroom', 'templar-codec-jackson'
-    description 'Templar Codec - Jackson'
+    projectDescription = 'Templar Codec - Jackson'
 }
 
 configurations.all {
