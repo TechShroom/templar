@@ -56,4 +56,4 @@ subprojects {
 
 task build {}
 build.dependsOn(subprojects.collect { it.build })
-afterReleaseBuild.dependsOn(subprojects.collect { it.publish })
+afterReleaseBuild.dependsOn(subprojects.collect { ({ it.tasks.named("publish") }) })
